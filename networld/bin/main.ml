@@ -1,55 +1,58 @@
 
+	(* [@@deriving show] *)
 
-module Fiber = struct
-    type fiber =
-        | Step of {
-            action : unit -> int;
-            cont : int -> fiber;
-        }
-        | End of unit
-    [@@deriving show]
-
-    (* k: int -> fiber *)
-    let (>>=) (Step fiber) k = Step { action = fiber.action; cont = fun a -> k a }
-    (* let (let) (f, c) k = Step (f, c (fun a -> k a)) *)
-    let step f = Step { action = f; cont = fun _ -> End () }
+module type Functor = sig
+  type 'a t
+  val map : ('a -> 'b) -> 'a t -> 'b t
 end
 
-let const () = 1
 
-(* 
-    let* p = async () in
-    let* a = await p in
-    return a
-*)
+module Free = functor (F : Functor) -> struct
+	type 'a free =
+		| Free of 'a free F.t
+		| Pure of 'a
+		(* [@@deriving show] *)
 
-(* 
-    async () >>= \p ->
-    await p >>= \a ->
-    return a
-*)
+	let rec bind = 
+		fun f m -> 
+			match f with
+				| Free f -> Free (F.map (fun a -> bind a m) f)
+				| Pure a -> m a
 
-(* 
-    (Step f (\p -> return p : fiber))
-    Step : (unit -> 'a) * ((a' -> fiber) -> fiber)
-    (Async (\p -> (Await (\a -> return a)))
-    Await <- fiber : ('a -> fiber)
-*)
+	let (let*) m k = bind m k
+	let pure f = Pure f
+end
 
-open Fiber
+module Stack = struct
+	type 'a t = 
+		| Push of int * 'a
+		| Pop of (int -> 'a)
+		| Get of (string -> 'a)
 
-let () = 
-    let m = (Fiber.step (fun () -> 1)) >>= (fun a -> Fiber.step (fun () -> 1) )
-        (* let* _ = Fiber.step (fun () -> 1) in (End ()) *)
-        in ()
-(* 
-bind : m a -> (a -> m b) -> m b
-*)
-(* 
-set : a -> state a
-get : unit -> state a
-*)
-(*  set >>= \s ->
-    get () >>= \a ->
-    Printf.print a
-*)
+	let map =
+		fun fn f -> 
+			match f with
+				| Pop k -> Pop (fun a -> fn (k a))
+				| Push (a, f) -> Push (a, fn f)
+				| Get k -> Get (fun a -> fn (k a))
+end
+
+module FreeStack = Free(Stack)
+open FreeStack
+
+	let rec run f = 
+		let stack = ref 33 in
+		let str = ref "hello" in
+		match f with
+			| (Free (Push (i, f))) -> Printf.printf "push %d\n" i; stack := i; run f
+			| (Free (Pop f)) -> Printf.printf "pop\n"; run (f !stack)
+			|	(Free (Get f)) -> run (f !str)
+			| (Pure a) -> Printf.printf "pure\n"
+
+let main () =
+	let* x = Free (Pop (fun x -> Pure (x))) in
+	let* _ = (Free (Stack.map pure (Push (x, ())))) in 
+	let* s = Free (Get (fun s -> Pure (s))) in Pure (Printf.printf "%s\n" s)
+
+let _ = 
+	let f = main () in run f

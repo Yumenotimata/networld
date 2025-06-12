@@ -1,0 +1,6 @@
+(executable
+ (public_name networld)
+ (name main)
+ (libraries networld)
+ (preprocess (pps ppx_deriving.show ppx_deriving.ord))
+ (flags (:standard -warn-error -a)))

@@ -1,0 +1,41 @@
+# dune exec networld --display quiet
+# OCAMLPARAM: unset
+# Shared cache: enabled-except-user-rules
+# Shared cache location: /home/opam/.cache/dune/db
+# Workspace root: /workspaces/networld/networld
+# Auto-detected concurrency: 2
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /home/opam/.opam/5.1/bin/ocamlc.opt -config > /tmp/dune_60bc25_output
+$ (cd _build/.sandbox/8bdfd5fcb1b63be9b4a888c2aecfd5cb/default && .ppx/52c49c7c6bc3dda051f54733e606b527/ppx.exe -o bin/main.pp.ml --impl bin/main.ml -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
+$ (cd _build/default && /home/opam/.opam/5.1/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -a -g -I bin/.main.eobjs/byte -I bin/.main.eobjs/native -I /home/opam/.opam/5.1/lib/ppx_deriving/runtime -I lib/.networld.objs/byte -I lib/.networld.objs/native -intf-suffix .ml -no-alias-deps -opaque -o bin/.main.eobjs/native/dune__exe__Main.cmx -c -impl bin/main.pp.ml)
+> File "bin/main.ml", line 13, characters 14-82:
+> 13 |     let (>>=) (Step fiber) k = Step { action = fiber.action; cont = fun a -> k a }
+>                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> Warning 8 [partial-match]: this pattern-matching is not exhaustive.
+> Here is an example of a case that is not matched:
+> End ()
+>
+> File "bin/main.ml", line 18, characters 4-9:
+> 18 | let const () = 1
+>          ^^^^^
+> Warning 32 [unused-value-declaration]: unused value const.
+>
+> File "bin/main.ml", line 42, characters 8-9:
+> 42 |     let m = (Fiber.step (fun () -> 1)) >>= (fun a -> Fiber.step (fun () -> 1) )
+>              ^
+> Warning 26 [unused-var]: unused variable m.
+>
+> File "bin/main.ml", line 42, characters 48-49:
+> 42 |     let m = (Fiber.step (fun () -> 1)) >>= (fun a -> Fiber.step (fun () -> 1) )
+>                                                      ^
+> Warning 27 [unused-var-strict]: unused variable a.
+$ (cd _build/default && /home/opam/.opam/5.1/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -a -g -o bin/main.exe lib/networld.cmxa /home/opam/.opam/5.1/lib/ppx_deriving/runtime/ppx_deriving_runtime.cmxa bin/.main.eobjs/native/dune__exe__Main.cmx)
+$ (cd /workspaces/networld/networld && /workspaces/networld/networld/_build/install/default/bin/networld)

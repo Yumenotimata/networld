@@ -5,3 +5,6 @@ module Free = Dune__exe__Free
 
 (** @canonical Dune__exe.Main *)
 module Main = Dune__exe__Main
+
+(** @canonical Dune__exe.Meta *)
+module Meta = Dune__exe__Meta

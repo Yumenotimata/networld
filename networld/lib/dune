@@ -1,2 +1,5 @@
 (library
- (name networld))
+ (name networld)
+ (public_name networld)
+ (libraries unix)
+ (flags (:standard -warn-error -a)))

@@ -1,4 +1,4 @@
-(lang dune 3.19)
+(lang dune 3.0)
 
 (name networld)
 
@@ -17,10 +17,11 @@
 
 (package
  (name networld)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml)
- (tags
-  ("add topics" "to describe" your project)))
+ (synopsis "Network simulation with effects and fibers")
+ (description "A network simulation library using OCaml effects and fibers")
+ (depends
+  (ocaml (>= 5.0.0))
+  dune
+  effect))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html

@@ -50,9 +50,6 @@ module Meta = struct
   let send dst msg = perform (Send (dst, msg))
   let receive id = perform (Receive id)
 
-  let is_connected network src dst =
-    List.exists (fun conn -> conn.src = src && conn.dst = dst) !(network.connections)
-    (* : (unit -> 'a Fiber.free) -> 'a Fiber.free *)
   let run  = fun prog -> 
     let network = create_network () in
 
@@ -65,7 +62,6 @@ module Meta = struct
       network.next_id := id + 1;
       let dev = create_device id in
       Hashtbl.add network.devices id dev;
-      Printf.printf "Created device %d\n%!" id;
       continue k (Fiber.return id)
     in
 
@@ -73,7 +69,6 @@ module Meta = struct
       match get_device src, get_device dst with
       | Some src_dev, Some dst_dev ->
           network.connections := { src = src_dev.id; dst = dst_dev.id } :: !(network.connections);
-          Printf.printf "Connected device %d to %d\n%!" src_dev.id dst_dev.id;
           continue k (Fiber.return ())
       | None, _ ->
           Printf.printf "Source device %d does not exist\n%!" src;
@@ -82,7 +77,6 @@ module Meta = struct
           Printf.printf "Destination device %d does not exist\n%!" dst;
           continue k (Fiber.return ())
     in
-
     
     let wakers = Hashtbl.create 16 in
 
@@ -93,8 +87,7 @@ module Meta = struct
             let msg = Queue.pop dev.buffer in
             continue k (Fiber.return msg)
           else
-            Printf.printf "waker not called\n%!";
-            continue k (waker (fun wake -> Printf.printf "waker called\n%!"; Hashtbl.add wakers 0 wake) >> lift (fun () -> Queue.pop dev.buffer))
+            continue k (waker (fun wake -> Hashtbl.add wakers 0 wake) >> lift (fun () -> Queue.pop dev.buffer))
       | None ->
           Printf.printf "Device %d does not exist\n%!" id;
           continue k (Fiber.return "unreachable!")
@@ -103,15 +96,12 @@ module Meta = struct
     let handle_send dst msg k =
       match get_device dst with
       | Some dst_dev ->
-          Printf.printf "send from %d to %d\n%!" dst dst_dev.id;
           Queue.add msg dst_dev.buffer;
           if Hashtbl.mem wakers 0 then begin
             let wake = Hashtbl.find wakers dst_dev.id in
             wake ();
-            Printf.printf "waker called\n%!"
           end else
-            Printf.printf "Message sent to device %d: %s\n%!" dst msg;
-          continue k (Fiber.return ())
+            continue k (Fiber.return ())
       | None ->
           Printf.printf "Device %d does not exist\n%!" dst;
           continue k (Fiber.return ())

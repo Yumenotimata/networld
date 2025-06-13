@@ -1,1 +1,1 @@
-lib/fiber.ml: Free Obj Printf Queue
+lib/fiber.ml: Free Obj Queue

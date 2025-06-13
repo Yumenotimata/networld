@@ -19,6 +19,7 @@ let test_waker () =
     let* router = Meta.create () in
     let* _ = Meta.connect pc router in
     spawnfree (fun () -> 
+      Printf.printf "receive\n%!";
       let* msg = Meta.receive pc in
       Fiber.return @@ Printf.printf "Message received: %s\n%!" msg
     ) >>

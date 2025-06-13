@@ -33,7 +33,6 @@ module Ops = struct
   let yield () = Fiber.liftF (FiberOps.Yield (fun () -> ()))
   let lift f = Fiber.liftF (FiberOps.Lift f)
   let liftF f a = Fiber.Pure (FiberOps.Lift (fun () -> f a))
-
   let waker f =
     Fiber.liftF (FiberOps.Waker (f, fun () -> ()))
 end
@@ -51,14 +50,12 @@ module Scheduler = struct
         | Fiber.Free (FiberOps.Yield k) ->
             enqueue (fun () -> loop @@ (fun () -> k ()))
         | Fiber.Free (FiberOps.Waker (f, k)) -> 
-            f (fun () -> Printf.printf "waker called\n"; enqueue (fun () -> loop @@ (fun () -> k ())))
+            f (fun () -> enqueue (fun () -> loop @@ (fun () -> k ())))
         | Fiber.Free (FiberOps.SpawnFree (task, k)) ->
             enqueue (fun () -> loop @@ (fun () -> k ()));
             enqueue (fun () -> loop @@ (fun () -> task ()))
         | Fiber.Free (FiberOps.Lift f) -> 
             enqueue (fun () -> loop @@ f)
-            (* f (fun () -> Printf.printf "waker called\n") *)
-            (* enqueue (fun () -> loop @@ fun() -> k (fun () -> enqueue (fun () -> loop fiber))) *)
     in
 
     enqueue (fun () -> loop main);

@@ -1,1 +1,1 @@
-lib/meta.ml: Effect Fiber Hashtbl List Ops Printf Queue
+lib/meta.ml: Effect Fiber Hashtbl Ops Printf Queue
